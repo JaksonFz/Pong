@@ -3,12 +3,35 @@ import sys
 import random
 
 pygame.init()
+pygame.mixer.init()
 
 PRETO = (0,0,0)
 BRANCO = (255,255,255)
 
 largura = 800
 altura = 600
+
+
+class Audio:
+    def __init__(self):
+        self.hit_paddle = pygame.mixer.Sound("assets/Paddle.wav")
+        self.hit_wall = pygame.mixer.Sound("assets/Hall.wav")
+        self.score = pygame.mixer.Sound("assets/Score.wav")
+
+        pygame.mixer.music.load("assets/Soundtrack.wav")
+        pygame.mixer.music.set_volume(0.5)
+
+    def play_music(self):
+        pygame.mixer.music.play(-1)
+
+    def play_hit_paddle(self):
+        self.hit_paddle.play()
+
+    def play_hit_wall(self):
+        self.hit_wall.play()
+
+    def play_score(self):
+        self.score.play()
 
 
 class Menu:
@@ -55,8 +78,10 @@ class Paddle:
 
     def mover_player(self):
         keys = pygame.key.get_pressed()
+
         if keys[pygame.K_UP] and self.y > 0:
             self.y -= 5
+
         if keys[pygame.K_DOWN] and self.y < altura - self.altura:
             self.y += 5
 
@@ -86,16 +111,18 @@ class Ball:
     def rect(self):
         return pygame.Rect(self.x, self.y, self.tamanho, self.tamanho)
 
-    def atualizar(self):
+    def atualizar(self, audio):
         self.x += self.vel_x
         self.y += self.vel_y
 
         if self.y <= 0 or self.y >= altura - self.tamanho:
             self.vel_y = -self.vel_y
+            audio.play_hit_wall()
 
-    def colidir(self, p1, p2):
+    def colidir(self, p1, p2, audio):
         if self.rect().colliderect(p1.rect()) or self.rect().colliderect(p2.rect()):
             self.vel_x = -self.vel_x
+            audio.play_hit_paddle()
 
     def reset(self):
         self.x = largura // 2 - self.tamanho//2
@@ -138,6 +165,9 @@ class Game:
         self.tela = tela
         self.clock = pygame.time.Clock()
 
+        self.audio = Audio()
+        self.audio.play_music()
+
         raquete_largura = 10
         raquete_altura = 60
         tamanho_bola = 7
@@ -156,15 +186,17 @@ class Game:
 
             self.tela.fill(PRETO)
 
-            self.bola.atualizar()
-            self.bola.colidir(self.player1, self.player2)
+            self.bola.atualizar(self.audio)
+            self.bola.colidir(self.player1, self.player2, self.audio)
 
             if self.bola.x <= 0:
+                self.audio.play_score()
                 if self.score.ponto_p2():
                     return True
                 self.bola.reset()
 
             if self.bola.x >= largura - self.bola.tamanho:
+                self.audio.play_score()
                 if self.score.ponto_p1():
                     return True
                 self.bola.reset()
@@ -188,12 +220,12 @@ class App:
 
     def executar(self):
         menu = Menu(self.tela)
-        game = Game(self.tela)
 
         while True:
             if not menu.executar():
                 break
 
+            game = Game(self.tela)
             if not game.executar():
                 break
 
