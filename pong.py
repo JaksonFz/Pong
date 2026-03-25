@@ -14,9 +14,9 @@ altura = 600
 
 class Audio:
     def __init__(self):
-        self.hit_paddle = pygame.mixer.Sound("assets/Soundtrack.wav")
-        self.hit_wall = pygame.mixer.Sound("assets/Soundtrack.wav")
-        self.score = pygame.mixer.Sound("assets/Soundtrack.wav")
+        self.hit_paddle = pygame.mixer.Sound("assets/Paddle.wav")
+        self.hit_wall = pygame.mixer.Sound("assets/Hall.wav")
+        self.score = pygame.mixer.Sound("assets/Score.wav")
 
         pygame.mixer.music.load("assets/Soundtrack.wav")
         pygame.mixer.music.set_volume(0.5)
