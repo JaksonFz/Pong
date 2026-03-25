@@ -103,10 +103,17 @@ class Paddle:
 class Ball:
     def __init__(self, tamanho):
         self.tamanho = tamanho
-        self.x = largura // 2 - tamanho//2
-        self.y = altura // 2 - tamanho//2
-        self.vel_x = 5
-        self.vel_y = 5
+        self.reset()
+
+    def velocidade_inicial(self):
+        vx = random.randint(-1, 1)
+        vy = random.randint(-1, 1)
+
+        while vx == 0 and vy == 0:
+            vx = random.randint(-1, 1)
+            vy = random.randint(-1, 1)
+
+        return vx * 5, vy * 5
 
     def rect(self):
         return pygame.Rect(self.x, self.y, self.tamanho, self.tamanho)
@@ -115,23 +122,39 @@ class Ball:
         self.x += self.vel_x
         self.y += self.vel_y
 
-        if self.y <= 0 or self.y >= altura - self.tamanho:
-            self.vel_y = -self.vel_y
+        if self.y <= 0:
+            self.vel_x = random.randint(-1, 1) * 5
+            self.vel_y = random.randint(0, 1) * 5
+            audio.play_hit_wall()
+
+        if self.y >= altura - self.tamanho:
+            self.vel_x = random.randint(-1, 1) * 5
+            self.vel_y = random.randint(-1, 0) * 5
             audio.play_hit_wall()
 
     def colidir(self, p1, p2, audio):
-        if self.rect().colliderect(p1.rect()) or self.rect().colliderect(p2.rect()):
-            self.vel_x = -self.vel_x
+        if self.rect().colliderect(p1.rect()):
+            self.vel_x = random.randint(0, 1) * 5
+            self.vel_y = random.randint(-1, 1) * 5
+            audio.play_hit_paddle()
+
+        if self.rect().colliderect(p2.rect()):
+            self.vel_x = random.randint(-1, 0) * 5
+            self.vel_y = random.randint(-1, 1) * 5
             audio.play_hit_paddle()
 
     def reset(self):
-        self.x = largura // 2 - self.tamanho//2
-        self.y = altura // 2 - self.tamanho//2
-        self.vel_x = -self.vel_x
+        self.x = largura // 2 - self.tamanho // 2
+        self.y = altura // 2 - self.tamanho // 2
+        self.vel_x, self.vel_y = self.velocidade_inicial()
 
     def desenhar(self, tela):
-        pygame.draw.circle(tela, BRANCO, (self.x, self.y), self.tamanho)
-
+        pygame.draw.circle(
+            tela,
+            BRANCO,
+            (int(self.x), int(self.y)),
+            self.tamanho
+        )
 
 class Score:
     def __init__(self):
